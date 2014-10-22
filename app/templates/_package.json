@@ -1,0 +1,52 @@
+{
+  "name": "<%= _.slugify(appname) %>",
+  "version": "0.0.1",
+  "description": "<%= moduleDescription %>",
+  "keywords": [],
+  "homepage": "<%= githubUrl %>/<%= _.slugify(appname) %>",
+  "bugs": "<%= githubUrl %>/<%= _.slugify(appname) %>/issues",
+  "author": {
+    "name": "<%= realname %>",
+    "email": "<%= email %>",
+    "url": "<%= githubUrl %>"
+  },
+  "main": "./lib/<%= _.slugify(appname) %>.js",
+  "repository": {
+    "type": "git",
+    "url": "<%= githubUrl %>/<%= _.slugify(appname) %>.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "swig": "1.4.x",
+    "express": "4.9.x",
+    "morgan": "1.3.x",
+    "compression": "1.1.x",
+    "serve-static": "1.6.x",
+    "body-parser": "1.9.x",
+    "hyperquest": "0.2.x",
+    "lodash": "2.4.x",
+    "mpbasic": "0.0.x",
+    "extend": "1.2.x",
+    "node-cache": "1.x",
+    "redis": "0.12.x",
+    "hiredis": "0.1.x",
+    "bluebird": "2.3.x"
+  },
+  "devDependencies": {
+    "grunt": "0.4.x",
+    "request": "*",
+    "grunt-regarde": "*",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-coffee": "*",
+    "grunt-contrib-compress": "*",
+    "grunt-contrib-stylus": "*",
+    "grunt-contrib-uglify": "*",
+    "grunt-contrib-cssmin": "*",
+    "grunt-contrib-clean": "*",
+    <% if( swigCompiler ){ %>
+    "grunt-swig-compile": "0.1.x",
+    <% } %>
+    "grunt-contrib-concat": "*",
+    "grunt-ssh": "*"
+  }
+}
