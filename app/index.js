@@ -94,6 +94,7 @@
             _this.moduleDescription = props.moduleDescription;
             _this.swigCompiler = props.swigCompiler;
             _this.restAPI = props.restAPI;
+            _this.serverPort = props.serverPort;
             _this.appname = _this.moduleName;
             done();
           };
@@ -105,14 +106,10 @@
       userInfo: function() {
         var done;
         done = this.async();
-        githubUserInfo(this.githubUser, (function(_this) {
-          return function(res) {
-            _this.realname = res.name;
-            _this.email = res.email;
-            _this.githubUrl = res.html_url;
-            done();
-          };
-        })(this));
+        this.realname = "offline";
+        this.email = "offline";
+        this.githubUrl = "offline";
+        done();
       }
     };
 
@@ -160,8 +157,8 @@
 
     CoffeeModuleGenerator.prototype.install = {
       npm: function() {
-        generator.npmInstall();
-        generator.bowerInstall();
+        this.npmInstall();
+        this.bowerInstall();
       }
     };
 

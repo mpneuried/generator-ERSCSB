@@ -73,6 +73,7 @@ class CoffeeModuleGenerator extends yeoman.generators.Base
         @moduleDescription = props.moduleDescription
         @swigCompiler = props.swigCompiler
         @restAPI = props.restAPI
+        @serverPort = props.serverPort
         @appname = @moduleName
         done()
         return
@@ -82,13 +83,13 @@ class CoffeeModuleGenerator extends yeoman.generators.Base
     userInfo: ->
       done = @async()
 
-      githubUserInfo @githubUser, (res) =>
-        @realname = res.name
-        @email = res.email
-        @githubUrl = res.html_url
-        done()
-        return
+      #githubUserInfo @githubUser, (res) =>
+      @realname = "offline" #res.name
+      @email = "offline" #res.email
+      @githubUrl = "offline" #res.html_url
+      done()
       return
+      #return
 
   writing: 
     projectfiles: ->
@@ -107,7 +108,7 @@ class CoffeeModuleGenerator extends yeoman.generators.Base
       @dest.mkdir('_src')
       @dest.mkdir('_src/lib')
       @dest.mkdir('_src/modules')
-
+      
       @template '_src/server.coffee', "_src/server.coffee"
       @template '_src/lib/apibase.coffee', "_src/lib/apibase.coffee"
       @template '_src/lib/config.coffee', "_src/lib/config.coffee"
@@ -138,8 +139,8 @@ class CoffeeModuleGenerator extends yeoman.generators.Base
 
   install:
     npm: ->
-      generator.npmInstall()
-      generator.bowerInstall()
+      @npmInstall()
+      @bowerInstall()
       return
 
 module.exports = CoffeeModuleGenerator

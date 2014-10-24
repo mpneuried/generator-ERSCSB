@@ -1,16 +1,11 @@
 request = require( "request" )
 module.exports = (grunt) ->
-	try
-		deploy = grunt.file.readJSON( "deploy.json" )
-		if deploy?.configfile?
-			_deployConfig = require( "./" + deploy.configfile )
-	catch _err
-		deploy = {}
+
 
 	# Project configuration.
 	grunt.initConfig
 		pkg: grunt.file.readJSON('package.json')
-		deploy: deploy
+		#deploy: deploy
 		regarde:
 			serverjs:
 				files: ["_src/**/*.coffee"]
@@ -119,97 +114,7 @@ module.exports = (grunt) ->
 						{ src: [ "package.json", "main.js", "server.js", "modules/**", "static/**", "lib/**", "views/**", "_src_static/css/**/*.styl" ], dest: "./" }
 				]
 
-		sftp:	
-			upload:
-				files:
-					"./":  [ "release/<%= pkg.name %>_deploy_<%= pkg.version.replace( '.', '_' ) %>.zip" ]
-				options:
-					path: "<%= deploy.targetServerPath %>"
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-					createDirectories: true
-	
-			configfile:
-				files:
-					"./":  [ "<%= deploy.configfile %>" ]
-				options:
-					path: "<%= deploy.targetServerPath %>"
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-					createDirectories: true
-
-		sshexec:
-			cleanup:
-				command: "rm -rf <%= deploy.targetServerPath %>*"
-				options:
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-			cleanup_nonpm:
-				command: "cd <%= deploy.targetServerPath %> && rm -rf $(ls | grep -v node_modules)"
-				options:
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-			cleanrelease:
-				command: "rm -rf <%= deploy.targetServerPath %>release/"
-				options:
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-			unzip:
-				command: [ "cd <%= deploy.targetServerPath %> && unzip -u -q -o release/<%= pkg.name %>_deploy_<%= pkg.version.replace( '.', '_' ) %>.zip", "ls" ]
-				options:
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-					createDirectories: true
-			doinstall:
-				command: [ "cd <%= deploy.targetServerPath %> && npm install --production " ]
-				options:
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-					createDirectories: true
-			renameconfig:
-				command: [ "cd <%= deploy.targetServerPath %> && mv <%= deploy.configfile %> config.json" ]
-				options:
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-					createDirectories: true
-
-			stop:
-				command: [ "echo <%= deploy.password %>|sudo -S stop <%= deploy.servicename %>" ]
-				options:
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-
-			start:
-				command: [ "echo <%= deploy.password %>|sudo -S start <%= deploy.servicename %>" ]
-				options:
-					host: "<%= deploy.host %>"
-					username: "<%= deploy.username %>"
-					password: "<%= deploy.password %>"
-
-	grunt.registerTask "ping-test", ->
-		done = this.async()
-		_url = "http://" + deploy.host + ":#{_deployConfig?.server?.port or 8001 }/ping"
-		grunt.log.writeln( _url )
-		setTimeout( ->
-			request.get _url, ( err, res, body )->
-				if err
-					grunt.log.error(err)
-					done()
-					return
-				grunt.log.writeln( body )
-				done()
-				return
-		, 2000 )
-		return
+		
 
 	# Load npm modules
 	grunt.loadNpmTasks "grunt-regarde"
@@ -244,15 +149,3 @@ module.exports = (grunt) ->
 	grunt.registerTask "build_staticfiles", [ "copy:static" ]
 
 	grunt.registerTask "release", [ "build", "uglify:staticjs", "compress" ]	
-
-	grunt.registerTask "sshdeploy-upload", [ "sftp:upload", "sshexec:unzip", "sshexec:cleanrelease" ]
-	grunt.registerTask "sshdeploy-configure", [ "sftp:configfile", "sshexec:renameconfig" ]
-	grunt.registerTask "sshdeploy-restart", [ "sshexec:stop", "sshexec:start" ]
-	
-	grunt.registerTask "sshdeploy",		[ "sshexec:cleanup_nonpm", "sshdeploy-upload", "sshdeploy-configure", "deploy-restart" ]
-	grunt.registerTask "sshdeploy-npm",	[ "sshexec:cleanup", "sshdeploy-upload", "sshexec:doinstall", "sshdeploy-configure", "deploy-restart" ]
-
-
-	grunt.registerTask "deploy-restart", "sshdeploy-restart"
-	grunt.registerTask "deploy-npm", [ "release", "sshdeploy-npm", "build_staticjs", "ping-test" ]
-	grunt.registerTask "deploy", [ "release", "sshdeploy", "build_staticjs", "ping-test" ]
